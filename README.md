@@ -1,45 +1,88 @@
-# OOH Alerting System
+<div align="center">
 
-A reference recreation of the out-of-hours escalation system I built at THG
-Ingenuity - automated paging for critical support tickets outside business
-hours, originally wired into VictorOps, handling overnight callouts for a
-set of VIP clients without manual intervention.
+# 🚨 OOH Alerting System
 
-**This is a clean, from-scratch rebuild for portfolio purposes** - not the
-original production code, and it contains no real client IDs, keyword lists,
-or webhook endpoints. It reimplements the same architecture: four escalation
-tiers, out-of-hours/weekend detection, deduplication, and audit logging.
+**Automated out-of-hours escalation — four-tier classification, deduplication, and full audit logging, originally wired into VictorOps.**
 
-## How escalation works
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
+[![PHP](https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://www.php.net/)
 
-Every incoming ticket goes through the same pipeline:
+</div>
 
-1. **Is it out of hours?** (`OohDetector`) - outside business hours or a
-   weekend. Tickets during business hours never escalate; the regular
-   support team handles those.
-2. **What tier is it?** (`TierClassifier`) - checked in priority order:
-   - **VIP** - client is on the VIP list
-   - **Priority** - client is on the priority list (not VIP, but still
-     contractually above standard SLA)
-   - **Keyword** - subject line matches an emergency keyword (e.g. "down",
-     "unreachable", "data loss") and isn't excluded by a skip pattern
-     (e.g. a subject containing "test ticket" shouldn't page anyone)
-   - **Watched** - ticket ID is on an explicit watchlist, regardless of
-     client or keywords
-   - Anything matching none of these doesn't escalate.
-3. **Has this already been paged?** (`Deduplicator`) - the same ticket
-   shouldn't fire a fresh page every time the poller runs; a ticket that's
-   been escalated recently is suppressed until its snooze window expires.
-4. **Page** (`VictorOpsNotifier`) - mocked here; in production this called
-   the VictorOps REST API.
-5. **Log it** (`AuditLog`) - every escalation (and every suppressed
-   duplicate) gets a record: which ticket, which tier, when, and why.
+---
 
-## Running the demo
+> ⚠️ **This repo is a clean, from-scratch recreation for portfolio purposes.** It reimplements the real architecture I built at THG Ingenuity, with synthetic client IDs and keyword lists — no real client data, credentials, or webhook endpoints anywhere in this code.
+
+## 🎯 The Problem
+
+Critical client tickets arriving outside business hours were getting missed — there was no automated way to detect and escalate them.
+
+## ✨ The Solution
+
+```
+ticket arrives
+     │
+     ▼
+out of hours? ──no──▶ not escalated (business hours team handles it)
+     │yes
+     ▼
+classify tier: VIP → Priority → Keyword → Watched
+     │
+     ▼
+already paged recently? ──yes──▶ suppressed (dedup)
+     │no
+     ▼
+page + log
+```
+
+## 🚀 Features
+
+- 🏷️ **Four-tier classification** — VIP client, priority client, emergency keyword match, or explicit watchlist
+- 🔇 **Skip patterns** — a keyword match on a subject like "test ticket - please ignore" won't page anyone
+- 🔁 **Deduplication** — a snooze window stops the same ticket re-paging every polling cycle
+- 📝 **Full audit trail** — every decision (paged, suppressed, not escalated) is logged with a reason
+
+## 📋 Requirements
+
+```
+✓ PHP 8+
+```
+
+## 🎮 Usage
 
 ```bash
+git clone https://github.com/Nextera-Matt/ooh-alerting.git
+cd ooh-alerting
 php run-demo.php
 ```
 
-Runs a batch of synthetic tickets through the pipeline and prints what
-escalated, what was suppressed as a duplicate, and why.
+Runs a batch of synthetic tickets through the full pipeline and prints what got paged, what was suppressed as a duplicate, and why.
+
+## 🛠️ Stack
+
+<p align="center">
+  <img src="https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white" />
+  <img src="https://img.shields.io/badge/VictorOps-000000?style=for-the-badge" />
+</p>
+
+## 📄 License
+
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file.
+
+## 📬 Support
+
+<div align="center">
+
+[![GitHub Issues](https://img.shields.io/github/issues/Nextera-Matt/ooh-alerting)](https://github.com/Nextera-Matt/ooh-alerting/issues)
+
+[Open an Issue](https://github.com/Nextera-Matt/ooh-alerting/issues) • [Visit Portfolio](https://matthodges.uk)
+
+</div>
+
+---
+
+<div align="center">
+
+**Made by [Matt Hodges](https://matthodges.uk)**
+
+</div>
